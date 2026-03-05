@@ -14,8 +14,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z
+    .string()
+    .min(1, "Email is required.")
+    .email("Enter a valid email address."),
+  password: z
+    .string()
+    .min(1, "Password is required.")
+    .min(8, "Password must be at least 8 characters."),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -30,6 +36,7 @@ export function LoginForm() {
   const [installing, setInstalling] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
@@ -73,22 +80,32 @@ export function LoginForm() {
   }, []);
 
   async function onSubmit(values: LoginFormValues) {
+    setAuthError(null);
     setLoading(true);
-    const result = await signIn("credentials", {
-      email: values.email.toLowerCase(),
-      password: values.password,
-      redirect: false,
-    });
-    setLoading(false);
+    try {
+      const result = await signIn("credentials", {
+        email: values.email.toLowerCase(),
+        password: values.password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      toast.error("Invalid credentials or inactive account");
-      return;
+      if (!result || result.error || !result.ok) {
+        const message = "Invalid email or password. Please check your details and try again.";
+        setAuthError(message);
+        toast.error(message);
+        return;
+      }
+
+      toast.success("Welcome back");
+      router.push(callbackUrl);
+      router.refresh();
+    } catch {
+      const message = "Sign-in failed. Please try again.";
+      setAuthError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
     }
-
-    toast.success("Welcome back");
-    router.push(callbackUrl);
-    router.refresh();
   }
 
   async function handleInstallClick() {
@@ -137,6 +154,15 @@ export function LoginForm() {
         <LogIn className="mr-2 h-4 w-4" />
         {loading ? "Signing in..." : "Sign in"}
       </Button>
+      {authError ? (
+        <p
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+          aria-live="polite"
+        >
+          {authError}
+        </p>
+      ) : null}
       <div className="flex justify-center pt-1">
         <Image
           src="/icons/icon-192.png"
