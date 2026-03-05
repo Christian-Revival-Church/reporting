@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
 import { db } from "@/lib/db";
+import { REPORTING_DEADLINE_LABELS, getWeeklyReportingTimeline } from "@/lib/reporting-deadlines";
 import { hasPermission } from "@/lib/rbac";
 import { assertChurch, requireChurchContext } from "@/lib/tenant";
 import { homecellReportSchema, unlockReportSchema } from "@/lib/validations/homecell-report";
@@ -27,6 +28,18 @@ export async function submitHomecellReportAction(payload: unknown) {
   }
 
   const data = parsed.data;
+  const rawWeekStartDate = new Date(data.weekStartDate);
+  if (Number.isNaN(rawWeekStartDate.getTime())) {
+    return { success: false, message: "Invalid report week dates." };
+  }
+  const timeline = getWeeklyReportingTimeline(rawWeekStartDate);
+  if (new Date() >= timeline.lockAt) {
+    return {
+      success: false,
+      message: `Reporting for this week is closed from ${REPORTING_DEADLINE_LABELS.lockAt}. Continue with the new week.`,
+    };
+  }
+
   const presentCount = data.members.filter((member) => (member.homecellPresent ?? member.present ?? true)).length;
   const absentCount = data.members.length - presentCount;
 
@@ -36,8 +49,9 @@ export async function submitHomecellReportAction(payload: unknown) {
         churchId,
         homecellId: data.homecellId,
         submittedById: context.userId,
-        weekStartDate: new Date(data.weekStartDate),
-        weekEndDate: new Date(data.weekEndDate),
+        weekStartDate: timeline.weekStartDate,
+        weekEndDate: timeline.weekEndDate,
+        isLocked: false,
         totalMembers: data.members.length,
         membersPresent: presentCount,
         membersAbsent: absentCount,
@@ -171,9 +185,25 @@ export async function unlockHomecellReportAction(payload: unknown) {
     return { success: false, message: "Invalid request." };
   }
 
+  const report = await db.homecellReport.findFirst({
+    where: { id: parsed.data.reportId, churchId },
+    select: { id: true, weekStartDate: true },
+  });
+  if (!report) {
+    return { success: false, message: "Report not found." };
+  }
+
+  const timeline = getWeeklyReportingTimeline(report.weekStartDate);
+  if (new Date() >= timeline.lockAt) {
+    return {
+      success: false,
+      message: `This week is closed from ${REPORTING_DEADLINE_LABELS.lockAt}; unlocking is no longer allowed.`,
+    };
+  }
+
   await db.homecellReport.update({
     where: {
-      id: parsed.data.reportId,
+      id: report.id,
       churchId,
     },
     data: { isLocked: false },
@@ -185,7 +215,7 @@ export async function unlockHomecellReportAction(payload: unknown) {
     actorRole: context.role,
     action: AuditAction.UPDATE,
     entity: "HomecellReport",
-    entityId: parsed.data.reportId,
+    entityId: report.id,
     payload: { isLocked: false },
   });
 

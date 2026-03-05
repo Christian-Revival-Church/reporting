@@ -15,6 +15,13 @@ import {
   resolveAttendanceScope,
 } from "@/lib/attendance-scope";
 import { db } from "@/lib/db";
+import {
+  REPORTING_DEADLINE_LABELS,
+  getReportingDeadlineStage,
+  getWeeklyReportingTimeline,
+  reportingStageMessage,
+  toDateKey,
+} from "@/lib/reporting-deadlines";
 import { hasPermission } from "@/lib/rbac";
 import { assertChurch, requireChurchContext } from "@/lib/tenant";
 import { formatPercent } from "@/lib/utils";
@@ -144,6 +151,8 @@ export default async function AttendancePage({
   const selectedServicesMonth = parseMonthParam(params.servicesMonth);
   const selectedServiceDate = parseServiceDateParam(params.serviceDate, selectedServicesMonth);
   const servicesMonthWindow = monthWindowFromParam(selectedServicesMonth);
+  const reportingTimeline = getWeeklyReportingTimeline(new Date());
+  const reportingStage = getReportingDeadlineStage(new Date(), reportingTimeline.weekStartDate);
 
   const membersWhere = {
     churchId,
@@ -548,6 +557,19 @@ export default async function AttendancePage({
           <span className="font-medium">
             {churchServiceLabels.length ? churchServiceLabels.join(", ") : "No labels configured in settings yet."}
           </span>
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          Weekly reporting window: Homecell {REPORTING_DEADLINE_LABELS.homecellDue} | Church{" "}
+          {REPORTING_DEADLINE_LABELS.churchDue} | Outstanding {REPORTING_DEADLINE_LABELS.outstandingDue} | Lock{" "}
+          {REPORTING_DEADLINE_LABELS.lockAt}
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          Reporting week:{" "}
+          <span className="font-medium">
+            {toDateKey(reportingTimeline.weekStartDate)} to {toDateKey(reportingTimeline.weekEndDate)}
+          </span>
+          {" | "}
+          {reportingStageMessage(reportingStage)}
         </p>
         {canCreateService ? (
           <div className="mt-4">

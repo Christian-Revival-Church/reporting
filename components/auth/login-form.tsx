@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -76,6 +77,15 @@ export function LoginForm() {
         <LogIn className="mr-2 h-4 w-4" />
         {loading ? "Signing in..." : "Sign in"}
       </Button>
+      <div className="flex justify-center pt-1">
+        <Image
+          src="/icons/icon-192.png"
+          alt="CRC Reporting install logo"
+          width={56}
+          height={56}
+          className="h-14 w-14 rounded-xl border border-slate-200 bg-slate-50 p-1"
+        />
+      </div>
     </form>
   );
 }

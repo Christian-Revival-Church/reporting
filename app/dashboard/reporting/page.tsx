@@ -9,6 +9,13 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { resolveAttendanceScope } from "@/lib/attendance-scope";
 import { db } from "@/lib/db";
+import {
+  REPORTING_DEADLINE_LABELS,
+  getReportingDeadlineStage,
+  getWeeklyReportingTimeline,
+  reportingStageMessage,
+  toDateKey,
+} from "@/lib/reporting-deadlines";
 import { hasPermission } from "@/lib/rbac";
 import { assertChurch, requireChurchContext } from "@/lib/tenant";
 import { toStartCase } from "@/lib/utils";
@@ -47,19 +54,6 @@ type SalvationCandidate = {
   eligible: boolean;
   presentAt: "NONE" | "HOMECELL" | "CHURCH" | "BOTH";
 };
-
-function toDateKey(value: Date) {
-  return value.toISOString().slice(0, 10);
-}
-
-function mondayUtcForDate(value: Date) {
-  const date = new Date(value);
-  date.setUTCHours(0, 0, 0, 0);
-  const day = date.getUTCDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  date.setUTCDate(date.getUTCDate() + diffToMonday);
-  return date;
-}
 
 function parseDateParam(value: string | undefined) {
   const today = new Date();
@@ -278,9 +272,12 @@ export default async function ReportingPage({
   const selectedTab = parseTab(params.tab);
   const selectedDate = parseDateParam(params.date);
   const selectedDateKey = toDateKey(selectedDate);
-  const weekStart = mondayUtcForDate(selectedDate);
+  const timeline = getWeeklyReportingTimeline(selectedDate);
+  const weekStart = timeline.weekStartDate;
   const weekEndExclusive = addDays(weekStart, 7);
-  const weekEnd = addDays(weekStart, 6);
+  const weekEnd = timeline.weekEndDate;
+  const deadlineStage = getReportingDeadlineStage(new Date(), weekStart);
+  const deadlineLocked = deadlineStage === "LOCKED";
 
   const homecells = await db.homecell.findMany({
     where: {
@@ -436,7 +433,7 @@ export default async function ReportingPage({
           serviceLabels={serviceLabels}
           serviceGroups={serviceGroups}
           canSubmit={canSubmitHomecellMembers}
-          isLocked={selectedHomecellWeekReport?.isLocked ?? false}
+          isLocked={deadlineLocked || (selectedHomecellWeekReport?.isLocked ?? false)}
         />
       ) : (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
@@ -462,7 +459,7 @@ export default async function ReportingPage({
             existingItems={existingVisitorsItems}
             serviceGroups={serviceGroups}
             canSubmit={canSubmitHomecellMembers}
-            isLocked={selectedHomecellWeekReport?.isLocked ?? false}
+            isLocked={deadlineLocked || (selectedHomecellWeekReport?.isLocked ?? false)}
           />
         </div>
       ) : (
@@ -489,7 +486,7 @@ export default async function ReportingPage({
             existingItems={existingFirstVisitorsItems}
             serviceGroups={serviceGroups}
             canSubmit={canSubmitHomecellMembers}
-            isLocked={selectedHomecellWeekReport?.isLocked ?? false}
+            isLocked={deadlineLocked || (selectedHomecellWeekReport?.isLocked ?? false)}
           />
         </div>
       ) : (
@@ -521,7 +518,7 @@ export default async function ReportingPage({
             candidates={salvationCandidates}
             existingItems={existingSalvationItems}
             canSubmit={canSubmitHomecellMembers}
-            isLocked={selectedHomecellWeekReport?.isLocked ?? false}
+            isLocked={deadlineLocked || (selectedHomecellWeekReport?.isLocked ?? false)}
           />
         </div>
       ) : (
@@ -590,6 +587,16 @@ export default async function ReportingPage({
               </span>
             </p>
             <p className="text-sm text-slate-600">
+              Reporting window:{" "}
+              <span className="font-medium">
+                Homecell {REPORTING_DEADLINE_LABELS.homecellDue} | Church {REPORTING_DEADLINE_LABELS.churchDue}
+              </span>
+            </p>
+            <p className="text-sm text-slate-600">
+              Outstanding {REPORTING_DEADLINE_LABELS.outstandingDue} | Lock {REPORTING_DEADLINE_LABELS.lockAt}
+            </p>
+            <p className="text-sm text-slate-700">{reportingStageMessage(deadlineStage)}</p>
+            <p className="text-sm text-slate-600">
               Homecell: <span className="font-medium">{activeHomecellName}</span>
             </p>
           </div>
@@ -599,9 +606,13 @@ export default async function ReportingPage({
           <Tabs tabs={tabContent} defaultKey={selectedTab} />
         </div>
 
-        {selectedHomecellWeekReport ? (
+        {selectedHomecellWeekReport || deadlineLocked ? (
           <div className="mt-4">
-            {selectedHomecellWeekReport.isLocked ? <Badge>Locked</Badge> : <Badge variant="success">Unlocked</Badge>}
+            {deadlineLocked || selectedHomecellWeekReport?.isLocked ? (
+              <Badge variant="danger">Locked</Badge>
+            ) : (
+              <Badge variant="success">Unlocked</Badge>
+            )}
           </div>
         ) : null}
       </Card>

@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
 import { db } from "@/lib/db";
+import { REPORTING_DEADLINE_LABELS, getWeeklyReportingTimeline } from "@/lib/reporting-deadlines";
 import { hasPermission } from "@/lib/rbac";
 import { assertChurch, requireChurchContext } from "@/lib/tenant";
 import { homecellReportMemberSchema } from "@/lib/validations/homecell-report";
@@ -342,11 +343,13 @@ async function resolveReportingWriteContext(
   }
 
   const churchId = assertChurch(context.churchId);
-  const weekStartDate = new Date(data.weekStartDate);
-  const weekEndDate = new Date(data.weekEndDate);
-  if (Number.isNaN(weekStartDate.getTime()) || Number.isNaN(weekEndDate.getTime())) {
+  const rawWeekStartDate = new Date(data.weekStartDate);
+  if (Number.isNaN(rawWeekStartDate.getTime())) {
     return { success: false, message: "Invalid report week dates." };
   }
+  const timeline = getWeeklyReportingTimeline(rawWeekStartDate);
+  const weekStartDate = timeline.weekStartDate;
+  const weekEndDate = timeline.weekEndDate;
 
   const homecell = await db.homecell.findFirst({
     where: {
@@ -379,6 +382,21 @@ async function resolveReportingWriteContext(
       isLocked: true,
     },
   });
+
+  const now = new Date();
+  if (now >= timeline.lockAt) {
+    if (existingReport && !existingReport.isLocked) {
+      await db.homecellReport.update({
+        where: { id: existingReport.id, churchId },
+        data: { isLocked: true },
+      });
+    }
+
+    return {
+      success: false,
+      message: `Reporting for this week is closed from ${REPORTING_DEADLINE_LABELS.lockAt}. Continue with the new week.`,
+    };
+  }
 
   if (existingReport?.isLocked) {
     return { success: false, message: "This week report is locked. Ask a supervisor/overseer to unlock it first." };
@@ -469,6 +487,7 @@ export async function submitReportingMembersAction(payload: unknown) {
         submittedById: userId,
         weekStartDate,
         weekEndDate,
+        isLocked: false,
         totalMembers: parsed.data.members.length,
         membersPresent: presentCount,
         membersAbsent: absentCount,
@@ -618,6 +637,7 @@ export async function submitReportingVisitorsAction(payload: unknown) {
         submittedById: userId,
         weekStartDate,
         weekEndDate,
+        isLocked: false,
         totalMembers: 0,
         membersPresent: 0,
         membersAbsent: 0,
@@ -710,6 +730,7 @@ export async function submitReportingFirstVisitorsAction(payload: unknown) {
         submittedById: userId,
         weekStartDate,
         weekEndDate,
+        isLocked: false,
         totalMembers: 0,
         membersPresent: 0,
         membersAbsent: 0,
@@ -798,6 +819,7 @@ export async function submitReportingSalvationsAction(payload: unknown) {
         submittedById: userId,
         weekStartDate,
         weekEndDate,
+        isLocked: false,
         totalMembers: 0,
         membersPresent: 0,
         membersAbsent: 0,

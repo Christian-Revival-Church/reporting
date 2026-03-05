@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { OutstandingReportPopup } from "@/components/notifications/outstanding-report-popup";
 import { db } from "@/lib/db";
+import { ensureOutstandingReportNotificationForUser } from "@/lib/services/reporting-notifications";
 import { requireAuth } from "@/lib/tenant";
 
 export default async function DashboardLayout({
@@ -24,6 +26,14 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const outstandingResult = session.user.churchId
+    ? await ensureOutstandingReportNotificationForUser({
+        churchId: session.user.churchId,
+        userId: session.user.id,
+        role: session.user.role,
+      })
+    : { created: 0, summary: null };
+
   const unreadNotifications = session.user.churchId
     ? await db.notification.count({
         where: { churchId: session.user.churchId, userId: session.user.id, isRead: false },
@@ -39,6 +49,19 @@ export default async function DashboardLayout({
           name={session.user.name}
           churchName={church?.name}
           unreadNotifications={unreadNotifications}
+        />
+        <OutstandingReportPopup
+          summary={
+            outstandingResult.summary
+              ? {
+                  dedupeKey: outstandingResult.summary.dedupeKey,
+                  title: outstandingResult.summary.title,
+                  message: outstandingResult.summary.message,
+                  actionUrl: outstandingResult.summary.actionUrl,
+                  weekStartDate: outstandingResult.summary.weekStartDate,
+                }
+              : null
+          }
         />
         <main className="page-enter flex-1 px-3 py-4 sm:px-5 md:py-5 lg:overflow-y-auto lg:px-8">
           <div className="mx-auto w-full max-w-[1500px]">{children}</div>

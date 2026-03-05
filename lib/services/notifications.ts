@@ -2,6 +2,7 @@ import { NotificationType, Role } from "@prisma/client";
 import { addDays, startOfDay } from "date-fns";
 
 import { db } from "@/lib/db";
+import { ensureOutstandingReportNotificationForUser } from "@/lib/services/reporting-notifications";
 
 export async function generateOperationalNotifications(churchId: string) {
   const today = startOfDay(new Date());
@@ -52,14 +53,26 @@ export async function generateOperationalNotifications(churchId: string) {
     return created;
   });
 
-  if (!notifications.length) {
-    return { created: 0 };
+  let created = 0;
+
+  if (notifications.length) {
+    await db.notification.createMany({
+      data: notifications,
+    });
+    created += notifications.length;
   }
 
-  await db.notification.createMany({
-    data: notifications,
-  });
+  const outstanding = await Promise.all(
+    users.map((user) =>
+      ensureOutstandingReportNotificationForUser({
+        churchId,
+        userId: user.id,
+        role: user.role,
+      }),
+    ),
+  );
+  created += outstanding.reduce((total, item) => total + item.created, 0);
 
-  return { created: notifications.length };
+  return { created };
 }
 
