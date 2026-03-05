@@ -18,7 +18,6 @@ import {
 } from "@/lib/reporting-deadlines";
 import { hasPermission } from "@/lib/rbac";
 import { assertChurch, requireChurchContext } from "@/lib/tenant";
-import { toStartCase } from "@/lib/utils";
 
 type SearchParams = {
   date?: string;
@@ -577,9 +576,6 @@ export default async function ReportingPage({
           </div>
 
           <div className="space-y-2 text-left lg:text-right">
-            <p className="text-lg font-semibold text-slate-900">
-              Role: <span className="font-normal">{toStartCase(context.role)}</span>
-            </p>
             <p className="text-sm text-slate-600">
               Week:{" "}
               <span className="font-medium">

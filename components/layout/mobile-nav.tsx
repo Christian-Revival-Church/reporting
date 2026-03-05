@@ -17,7 +17,7 @@ type MobileNavProps = {
 const QUICK_LINK_PRIORITY = [
   "/dashboard",
   "/dashboard/reporting",
-  "/dashboard/attendance",
+  "/dashboard/chat",
   "/dashboard/membership",
 ] as const;
 

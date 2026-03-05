@@ -1,12 +1,15 @@
 import { Prisma, PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { addDays, set, startOfMonth, subDays, subMonths } from "date-fns";
+import { addDays, addMinutes, set, startOfMonth, subDays, subMonths } from "date-fns";
 
 const prisma = new PrismaClient();
 
 async function clearDatabase() {
   await prisma.auditLog.deleteMany();
   await prisma.notification.deleteMany();
+  await prisma.chatMessage.deleteMany();
+  await prisma.chatParticipant.deleteMany();
+  await prisma.chatThread.deleteMany();
   await prisma.memberLtvStatus.deleteMany();
   await prisma.financeTransaction.deleteMany();
   await prisma.homecellReportItem.deleteMany();
@@ -28,6 +31,10 @@ async function clearDatabase() {
   await prisma.verificationToken.deleteMany();
   await prisma.user.deleteMany();
   await prisma.church.deleteMany();
+}
+
+function buildDirectKey(firstUserId: string, secondUserId: string) {
+  return [firstUserId, secondUserId].sort().join(":");
 }
 
 async function main() {
@@ -846,6 +853,96 @@ async function main() {
       },
     ],
   });
+
+  const chatSeeds = [
+    {
+      from: pastor,
+      to: overseerOne,
+      messages: [
+        "Morning overseer update please.",
+        "All homecells have submitted, pastor.",
+        "Great. Keep tracking Sunday attendance tonight.",
+      ],
+    },
+    {
+      from: overseerOne,
+      to: supervisorOne,
+      messages: [
+        "Please review Zone A attendance before 20:30.",
+        "On it. I will send final numbers in 30 mins.",
+      ],
+    },
+    {
+      from: supervisorOne,
+      to: coordinatorOne,
+      messages: [
+        "Coordinator check with Alpha and Gamma leaders.",
+        "Done. Both leaders confirmed reports are complete.",
+      ],
+    },
+    {
+      from: coordinatorOne,
+      to: leaderOne,
+      messages: [
+        "Leader Joy, please confirm visitor follow-up list.",
+        "Confirmed and updated in reporting.",
+      ],
+    },
+    {
+      from: leaderOne,
+      to: pastor,
+      messages: [
+        "Pastor, Homecell Alpha has 2 first-time visitors this week.",
+        "Excellent. Please ensure they are contacted tomorrow.",
+      ],
+    },
+    {
+      from: churchAdmin,
+      to: pastor,
+      messages: [
+        "Admin note: dashboard export permissions are active.",
+        "Thank you. We will use this for weekly review.",
+      ],
+    },
+  ];
+
+  for (const [index, seed] of chatSeeds.entries()) {
+    const thread = await prisma.chatThread.create({
+      data: {
+        churchId: church.id,
+        type: "DIRECT",
+        directKey: buildDirectKey(seed.from.id, seed.to.id),
+        createdById: seed.from.id,
+        participants: {
+          create: [
+            { churchId: church.id, userId: seed.from.id },
+            { churchId: church.id, userId: seed.to.id },
+          ],
+        },
+      },
+      select: { id: true },
+    });
+
+    const baseTime = subDays(new Date(), chatSeeds.length - index);
+    for (const [messageIndex, content] of seed.messages.entries()) {
+      const senderId = messageIndex % 2 === 0 ? seed.from.id : seed.to.id;
+      const createdAt = addMinutes(baseTime, messageIndex * 6);
+      await prisma.chatMessage.create({
+        data: {
+          churchId: church.id,
+          threadId: thread.id,
+          senderId,
+          content,
+          createdAt,
+          updatedAt: createdAt,
+        },
+      });
+      await prisma.chatThread.update({
+        where: { id: thread.id },
+        data: { lastMessageAt: createdAt },
+      });
+    }
+  }
 
   console.log("Seed complete.");
   console.log("Super Admin:", superAdmin.email, "Password: Password123!");

@@ -2,6 +2,7 @@ import type { Role } from "@prisma/client";
 import {
   BarChart3,
   LayoutDashboard,
+  MessageCircle,
   Settings,
   Users,
   WavesLadder,
@@ -13,6 +14,7 @@ export const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "notifications:view" as const },
   { href: "/dashboard/reporting", label: "Reporting", icon: BarChart3, permission: "attendance:view" as const },
   { href: "/dashboard/summary", label: "Summary", icon: WavesLadder, permission: "homecell_reports:view" as const },
+  { href: "/dashboard/chat", label: "Chat", icon: MessageCircle, permission: "chat:use" as const },
   { href: "/dashboard/membership", label: "Membership", icon: Users, permission: "members:view" as const },
   {
     href: "/dashboard/settings",

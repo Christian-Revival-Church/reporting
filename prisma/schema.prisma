@@ -37,6 +37,9 @@ model Church {
   members             Member[]
   ltvSnapshots        MemberLtvStatus[]
   memberNotes         MemberNote[]
+  chatMessages        ChatMessage[]
+  chatParticipants    ChatParticipant[]
+  chatThreads         ChatThread[]
   notifications       Notification[]
   regions             Region[]
   services            Service[]
@@ -63,6 +66,9 @@ model User {
   attendanceMarked         AttendanceRecord[]   @relation("AttendanceMarkedBy")
   attendanceSelfReports    LeaderAttendanceSelfReport[] @relation("LeaderAttendanceReporter")
   auditLogs                AuditLog[]
+  chatMessagesSent         ChatMessage[]        @relation("ChatMessageSender")
+  chatParticipations       ChatParticipant[]
+  chatThreadsCreated       ChatThread[]         @relation("ChatThreadCreatedBy")
   createdChurches          Church[]             @relation("ChurchCreatedBy")
   pastoredChurch           Church?              @relation("ChurchPastor")
   ledDepartments           Department[]         @relation("DepartmentLeader")
@@ -79,6 +85,55 @@ model User {
   ledZone                  Zone?                @relation("ZoneLeader")
 
   @@index([churchId, role])
+}
+
+model ChatThread {
+  id            String          @id @default(cuid())
+  churchId      String
+  type          ChatThreadType  @default(DIRECT)
+  directKey     String?
+  createdById   String?
+  lastMessageAt DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  church        Church          @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  createdBy     User?           @relation("ChatThreadCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  participants  ChatParticipant[]
+  messages      ChatMessage[]
+
+  @@unique([churchId, directKey])
+  @@index([churchId, lastMessageAt])
+}
+
+model ChatParticipant {
+  id         String      @id @default(cuid())
+  churchId   String
+  threadId   String
+  userId     String
+  joinedAt   DateTime    @default(now())
+  lastReadAt DateTime?
+  church     Church      @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  thread     ChatThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index([churchId, userId])
+}
+
+model ChatMessage {
+  id        String    @id @default(cuid())
+  churchId  String
+  threadId  String
+  senderId  String
+  content   String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  church    Church    @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  thread    ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender    User      @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+  @@index([churchId, createdAt])
 }
 
 model Region {
@@ -597,4 +652,8 @@ enum AuditAction {
   DELETE
   EXPORT
   LOGIN
+}
+
+enum ChatThreadType {
+  DIRECT
 }

@@ -20,7 +20,8 @@ type Permission =
   | "analytics:view"
   | "notifications:view"
   | "notifications:manage"
-  | "exports:run";
+  | "exports:run"
+  | "chat:use";
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   SUPER_ADMIN: [
@@ -43,6 +44,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "notifications:view",
     "notifications:manage",
     "exports:run",
+    "chat:use",
   ],
   PASTOR: [
     "users:manage",
@@ -60,6 +62,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "notifications:view",
     "notifications:manage",
     "exports:run",
+    "chat:use",
   ],
   OVERSEER: [
     "members:view",
@@ -72,6 +75,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "analytics:view",
     "notifications:view",
     "exports:run",
+    "chat:use",
   ],
   SUPERVISOR: [
     "members:view",
@@ -83,6 +87,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "analytics:view",
     "notifications:view",
     "exports:run",
+    "chat:use",
   ],
   COORDINATOR: [
     "members:view",
@@ -93,6 +98,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "analytics:view",
     "notifications:view",
     "exports:run",
+    "chat:use",
   ],
   HOMECELL_LEADER: [
     "members:view",
@@ -102,6 +108,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "homecell_reports:submit",
     "visitors:view",
     "notifications:view",
+    "chat:use",
   ],
   CHURCH_ADMIN: [
     "users:manage",
@@ -116,6 +123,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "notifications:view",
     "notifications:manage",
     "exports:run",
+    "chat:use",
   ],
   FINANCE_ADMIN: [
     "members:view",
@@ -145,6 +153,7 @@ export const ROUTE_PERMISSIONS: Array<{
   { pattern: /^\/dashboard\/analytics/, permission: "analytics:view" },
   { pattern: /^\/dashboard\/notifications/, permission: "notifications:view" },
   { pattern: /^\/dashboard\/exports/, permission: "exports:run" },
+  { pattern: /^\/dashboard\/chat/, permission: "chat:use" },
   { pattern: /^\/dashboard\/admin\/churches/, permission: "church:create" },
 ];
 

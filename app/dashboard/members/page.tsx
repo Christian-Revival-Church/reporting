@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Prisma, Role } from "@prisma/client";
 
-import { MemberForm } from "@/components/members/member-form";
+import { AddMemberPanel } from "@/components/members/add-member-panel";
 import { MemberFilters } from "@/components/members/member-filters";
 import { MobileMembersList } from "@/components/members/mobile-members-list";
 import { Badge } from "@/components/ui/badge";
@@ -232,15 +232,7 @@ export default async function MembersPage({
       </Card>
 
       {canManage && context.role !== Role.FINANCE_ADMIN ? (
-        <Card>
-          <CardTitle>Add Member Profile</CardTitle>
-          <CardDescription className="mt-1">
-            Capture personal, contact, residence, demographic, discipleship, baptism, and involvement details.
-          </CardDescription>
-          <div className="mt-4">
-            <MemberForm mode="create" departments={departments} homecells={homecells} />
-          </div>
-        </Card>
+        <AddMemberPanel departments={departments} homecells={homecells} />
       ) : null}
     </div>
   );

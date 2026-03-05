@@ -44,6 +44,14 @@ textarea {
   touch-action: manipulation;
 }
 
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 .app-gradient {
   background-image:
     radial-gradient(1000px 520px at 0% 0%, rgb(14 165 233 / 16%), transparent),
