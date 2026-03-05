@@ -1,4 +1,5 @@
-import { Church, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/auth/login-form";
@@ -23,10 +24,8 @@ export default async function LoginPage() {
       <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-2">
         <section className="hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-sky-700 to-emerald-700 p-10 text-white shadow-xl lg:flex lg:flex-col lg:justify-between">
           <div>
-            <div className="inline-flex rounded-xl bg-white/15 p-3">
-              <Church className="h-7 w-7" />
-            </div>
-            <h1 className="mt-6 text-3xl font-semibold">ChurchFlow ChMS</h1>
+            <Image src="/icons/crc-logo.svg" alt="CRC logo" width={64} height={64} className="h-16 w-16 rounded-full bg-white" />
+            <h1 className="mt-6 text-3xl font-semibold">CRC Reporting</h1>
             <p className="mt-3 max-w-md text-sm text-white/85">
               Multi-tenant church management built for pastors and church admins. Clear workflows, fast screens, and secure data boundaries.
             </p>
@@ -47,9 +46,6 @@ export default async function LoginPage() {
           <p className="mt-2 text-sm text-slate-500">Use your church staff email and password.</p>
           <div className="mt-8">
             <LoginForm />
-          </div>
-          <div className="mt-8 rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
-            Demo seed account: `superadmin@churchflow.com` / `Password123!`
           </div>
         </Card>
       </div>

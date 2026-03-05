@@ -1,4 +1,4 @@
-# ChurchFlow ChMS
+# CRC Reporting
 
 Enterprise-grade, multi-tenant Church Management System built with:
 

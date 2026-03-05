@@ -19,22 +19,23 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ChurchFlow ChMS",
+  title: "CRC Reporting",
   description: "Enterprise-grade, multi-tenant Church Management System",
-  applicationName: "ChurchFlow ChMS",
+  applicationName: "CRC Reporting",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ChurchFlow ChMS",
+    title: "CRC Reporting",
   },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/crc-logo.svg", type: "image/svg+xml" },
     ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-    shortcut: ["/favicon.ico"],
+    shortcut: ["/icons/icon-192.png"],
   },
 };
 

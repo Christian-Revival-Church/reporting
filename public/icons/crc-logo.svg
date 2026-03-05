@@ -1,0 +1,16 @@
+﻿<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">CRC Logo</title>
+  <desc id="desc">Circular black outline with CRC text in the center</desc>
+  <rect width="512" height="512" fill="#efefef"/>
+  <circle cx="256" cy="256" r="233" fill="none" stroke="#000" stroke-width="10"/>
+  <text
+    x="256"
+    y="286"
+    text-anchor="middle"
+    fill="#000"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-size="138"
+    font-weight="900"
+    letter-spacing="4"
+  >CRC</text>
+</svg>

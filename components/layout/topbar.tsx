@@ -2,6 +2,7 @@
 
 import type { Role } from "@prisma/client";
 import { Bell, CalendarDays } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -35,7 +36,16 @@ export function Topbar({ role, name, churchName, unreadNotifications }: TopbarPr
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 px-3 py-3 backdrop-blur md:px-5 lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">Operations Console</p>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/icons/crc-logo.svg"
+              alt="CRC logo"
+              width={24}
+              height={24}
+              className="h-6 w-6 rounded-full border border-slate-300 bg-slate-100"
+            />
+            <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">CRC Reporting</p>
+          </div>
           <div className="mt-1 flex items-center gap-2">
             <h1 className="truncate text-lg font-semibold text-slate-900">{pageLabel}</h1>
             <Badge className="hidden sm:inline-flex">{toStartCase(role)}</Badge>
