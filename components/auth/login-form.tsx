@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LogIn } from "lucide-react";
+import { Download, LogIn } from "lucide-react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -20,8 +20,16 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
+
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
+  const [installing, setInstalling] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
@@ -37,6 +45,32 @@ export function LoginForm() {
       password: "",
     },
   });
+
+  useEffect(() => {
+    const standalone =
+      window.matchMedia?.("(display-mode: standalone)")?.matches ||
+      Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone);
+    setIsStandalone(Boolean(standalone));
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    };
+
+    const handleAppInstalled = () => {
+      setIsStandalone(true);
+      setInstallPrompt(null);
+      toast.success("CRC Reporting installed.");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
 
   async function onSubmit(values: LoginFormValues) {
     setLoading(true);
@@ -55,6 +89,32 @@ export function LoginForm() {
     toast.success("Welcome back");
     router.push(callbackUrl);
     router.refresh();
+  }
+
+  async function handleInstallClick() {
+    if (isStandalone) {
+      toast.success("CRC Reporting is already installed on this device.");
+      return;
+    }
+
+    if (!installPrompt) {
+      toast.error("Install prompt not available yet. Use Chrome or Edge and refresh this page.");
+      return;
+    }
+
+    setInstalling(true);
+    try {
+      await installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") {
+        toast.success("Installation started.");
+      } else {
+        toast.error("Installation was dismissed.");
+      }
+      setInstallPrompt(null);
+    } finally {
+      setInstalling(false);
+    }
   }
 
   return (
@@ -86,6 +146,19 @@ export function LoginForm() {
           className="h-14 w-14 rounded-xl border border-slate-200 bg-slate-50 p-1"
         />
       </div>
+      <Button type="button" variant="outline" fullWidth disabled={installing} onClick={handleInstallClick}>
+        <Download className="mr-2 h-4 w-4" />
+        {installing
+          ? "Opening install..."
+          : isStandalone
+            ? "Installed"
+            : installPrompt
+              ? "Install CRC Reporting"
+              : "Install CRC Reporting"}
+      </Button>
+      {!isStandalone && !installPrompt ? (
+        <p className="text-xs text-slate-500">If install does not appear, open in Chrome/Edge over HTTPS.</p>
+      ) : null}
     </form>
   );
 }

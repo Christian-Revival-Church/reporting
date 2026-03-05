@@ -757,7 +757,24 @@ export default async function AttendancePage({
               <Badge>{homecellRows.length} homecells</Badge>
             </div>
             <CardDescription className="mt-1">Attendance performance for the members under your scope.</CardDescription>
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 space-y-2 md:hidden">
+              {homecellRows.map((row) => (
+                <div key={row.name} className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-sm font-semibold text-slate-900">{row.name}</p>
+                  <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-slate-600">
+                    <p>Attended: {row.attended}</p>
+                    <p>Total: {row.total}</p>
+                    <p>Rate: {formatPercent(row.rate)}</p>
+                  </div>
+                </div>
+              ))}
+              {homecellRows.length === 0 ? (
+                <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+                  No scoped attendance data yet for this service.
+                </p>
+              ) : null}
+            </div>
+            <div className="mt-4 hidden overflow-x-auto md:block">
               <Table>
                 <TableHead>
                   <TableRow>
@@ -849,7 +866,7 @@ export default async function AttendancePage({
         </form>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <Card className="border border-slate-200">
+          <Card className="border border-slate-200">
             <CardTitle>Member Register ({registerYear})</CardTitle>
             <CardDescription className="mt-1">
               {selectedRegisterMember
@@ -862,7 +879,23 @@ export default async function AttendancePage({
               <Badge variant="danger">Absent: {memberYearSummary.absent}</Badge>
               <Badge>Total: {memberYearSummary.total}</Badge>
             </div>
-            <div className="mt-4 max-h-80 overflow-auto">
+            <div className="mt-4 space-y-2 md:hidden">
+              {memberYearEntries.map((entry) => (
+                <div key={entry.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-sm font-semibold text-slate-900">{entry.attendance.service.title}</p>
+                  <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-600">
+                    <span>{entry.attendance.service.eventDate.toISOString().slice(0, 10)}</span>
+                    <Badge variant={statusBadgeVariant(entry.status)}>{entry.status}</Badge>
+                  </div>
+                </div>
+              ))}
+              {memberYearEntries.length === 0 ? (
+                <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+                  No attendance records for this member in {registerYear}.
+                </p>
+              ) : null}
+            </div>
+            <div className="mt-4 hidden max-h-80 overflow-auto md:block">
               <Table>
                 <TableHead>
                   <TableRow>
@@ -900,7 +933,27 @@ export default async function AttendancePage({
                 ? zones.find((zone) => zone.id === selectedRegisterZoneId)?.name ?? "Selected zone"
                 : "All zones in your scope"}
             </CardDescription>
-            <div className="mt-4 max-h-80 overflow-auto">
+            <div className="mt-4 space-y-2 md:hidden">
+              {zoneRegisterRows.map((row) => (
+                <div key={row.memberId} className="rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-sm font-semibold text-slate-900">{row.memberName}</p>
+                  <p className="mt-1 text-xs text-slate-500">{row.homecellName}</p>
+                  <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                    <p className="text-emerald-700">P: {row.present}</p>
+                    <p className="text-amber-700">O: {row.online}</p>
+                    <p className="text-red-700">A: {row.absent}</p>
+                    <p className="text-slate-600">Total: {row.total}</p>
+                    <p className="text-slate-600">Rate: {formatPercent(row.attendanceRate)}</p>
+                  </div>
+                </div>
+              ))}
+              {zoneRegisterRows.length === 0 ? (
+                <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+                  No zone attendance records for {registerYear}.
+                </p>
+              ) : null}
+            </div>
+            <div className="mt-4 hidden max-h-80 overflow-auto md:block">
               <Table>
                 <TableHead>
                   <TableRow>

@@ -20,6 +20,11 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
 }
 
 body {
@@ -27,7 +32,16 @@ body {
     linear-gradient(160deg, #eef3f9 0%, #f7fafd 48%, #edf3f8 100%);
   color: var(--foreground);
   font-family: var(--font-manrope), sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: contain;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  touch-action: manipulation;
 }
 
 .app-gradient {

@@ -197,7 +197,20 @@ export default async function AdminChurchesPage() {
 
       <Card>
         <CardTitle>Zones By Region</CardTitle>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-2 md:hidden">
+          {zones.map((zone) => (
+            <div key={zone.id} className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-sm font-semibold text-slate-900">{zone.name}</p>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <p>Region: {zone.region?.name ?? "Unassigned"}</p>
+                <p>Leader: {zone.leader?.name ?? "Unassigned"}</p>
+                <p>Homecells: {zone._count.homecells}</p>
+                <p>Members: {zone._count.members}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>
@@ -225,7 +238,19 @@ export default async function AdminChurchesPage() {
 
       <Card>
         <CardTitle>Structure Leadership Branches</CardTitle>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-2 md:hidden">
+          {structureLeaders.map((assignment) => (
+            <div key={assignment.id} className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-sm font-semibold text-slate-900">{assignment.user.name}</p>
+              <div className="mt-2 grid grid-cols-1 gap-1 text-xs text-slate-600">
+                <p>Role: {assignment.role.replace("_", " ")}</p>
+                <p>Scope: {assignment.homecell?.name ?? assignment.zone?.name ?? assignment.region?.name ?? "-"}</p>
+                <p>Reports To: {assignment.parentLeader?.user.name ?? "Root"}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>
@@ -253,7 +278,21 @@ export default async function AdminChurchesPage() {
 
       <Card>
         <CardTitle>Members And Structure Mapping</CardTitle>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-2 md:hidden">
+          {members.slice(0, 80).map((member) => (
+            <div key={member.id} className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-sm font-semibold text-slate-900">
+                {member.firstName} {member.lastName}
+              </p>
+              <div className="mt-2 grid grid-cols-1 gap-1 text-xs text-slate-600">
+                <p>Region: {member.region?.name ?? "-"}</p>
+                <p>Zone: {member.zone?.name ?? "-"}</p>
+                <p>Homecell: {member.homecell?.name ?? "-"}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>

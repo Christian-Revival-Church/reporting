@@ -219,7 +219,24 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
         <Card>
           <CardTitle>Giving History</CardTitle>
           <CardDescription className="mt-1">Recent total: {formatCurrency(givingTotal)}</CardDescription>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 space-y-2 md:hidden">
+            {member.financeTransactions.map((tx) => (
+              <div key={tx.id} className="rounded-xl border border-slate-200 bg-white p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold text-slate-900">{formatCurrency(Number(tx.amount))}</p>
+                  <Badge>{tx.financeType}</Badge>
+                </div>
+                <p className="mt-2 text-xs text-slate-600">{tx.transactionDate.toDateString()}</p>
+                <p className="mt-1 text-xs text-slate-600">Method: {tx.paymentMethod}</p>
+              </div>
+            ))}
+            {member.financeTransactions.length === 0 ? (
+              <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+                No giving transactions yet.
+              </p>
+            ) : null}
+          </div>
+          <div className="mt-4 hidden overflow-x-auto md:block">
             <Table>
               <TableHead>
                 <TableRow>
@@ -238,6 +255,13 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                     <TableCell className="text-right font-medium">{formatCurrency(Number(tx.amount))}</TableCell>
                   </TableRow>
                 ))}
+                {member.financeTransactions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-sm text-slate-500">
+                      No giving transactions yet.
+                    </TableCell>
+                  </TableRow>
+                ) : null}
               </TableBody>
             </Table>
           </div>
@@ -285,7 +309,7 @@ export default async function MemberProfilePage({ params }: { params: Promise<{ 
                   <div key={note.id} className="rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm">
                     <p className="text-slate-700">{note.content}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {note.author.name} · {note.createdAt.toLocaleString()}
+                      {note.author.name} - {note.createdAt.toLocaleString()}
                     </p>
                   </div>
                 ))}

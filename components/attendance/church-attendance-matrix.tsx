@@ -254,7 +254,72 @@ export function ChurchAttendanceMatrix({ services, members, existing }: ChurchAt
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200">
+      <div className="space-y-2 md:hidden">
+        {filteredMembers.map((member) => {
+          const rowTotal = services.filter((service) => attendedMatrix[member.id]?.[service.id]).length;
+          const rowOnline = services.filter((service) => onlineMatrix[member.id]?.[service.id]).length;
+          return (
+            <div key={member.id} className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {member.firstName} {member.lastName}
+                  </p>
+                  <p className="text-xs text-slate-500">{member.homecellName ?? "No homecell"}</p>
+                </div>
+                <p className="text-xs font-medium text-slate-600">
+                  {rowTotal} in
+                  {rowOnline > 0 ? ` (${rowOnline} online)` : ""}
+                </p>
+              </div>
+
+              <div className="mt-3 space-y-2">
+                {services.map((service) => {
+                  const isAttended = Boolean(attendedMatrix[member.id]?.[service.id]);
+                  const isOnline = Boolean(onlineMatrix[member.id]?.[service.id]);
+                  return (
+                    <div key={service.id} className="rounded-lg border border-slate-200 p-2">
+                      <p className="text-xs font-medium text-slate-700">{service.title}</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleMemberAttended(member.id, service.id)}
+                          className={`rounded-md border px-2 py-1 text-xs font-medium ${
+                            isAttended
+                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                              : "border-slate-300 text-slate-700"
+                          }`}
+                        >
+                          In
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleMemberOnline(member.id, service.id)}
+                          disabled={!isAttended}
+                          className={`rounded-md border px-2 py-1 text-xs font-medium ${
+                            isOnline
+                              ? "border-amber-500 bg-amber-50 text-amber-700"
+                              : "border-slate-300 text-slate-700"
+                          } disabled:cursor-not-allowed disabled:opacity-50`}
+                        >
+                          Online
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {filteredMembers.length === 0 ? (
+          <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-500">
+            No members match your search.
+          </p>
+        ) : null}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
         <table className="min-w-full text-sm">
           <thead className="bg-slate-50">
             <tr>

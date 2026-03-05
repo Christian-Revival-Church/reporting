@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Prisma, Role } from "@prisma/client";
 
 import { HomecellReportForm } from "@/components/homecells/homecell-report-form";
+import { MobileHomecellReportsList } from "@/components/homecells/mobile-homecell-reports-list";
 import { UnlockReportButton } from "@/components/homecells/unlock-report-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -98,7 +99,28 @@ export default async function HomecellReportsPage() {
             </Link>
           ) : null}
         </div>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 md:hidden">
+          <MobileHomecellReportsList
+            reports={reports.map((report) => {
+              const rate = report.totalMembers ? (report.membersPresent / report.totalMembers) * 100 : 0;
+              return {
+                id: report.id,
+                weekStartDate: report.weekStartDate.toISOString().slice(0, 10),
+                homecellName: report.homecell.name,
+                membersPresent: report.membersPresent,
+                totalMembers: report.totalMembers,
+                attendanceRate: formatPercent(rate),
+                firstTimeVisitors: report.firstTimeVisitors,
+                visitors: report.visitors,
+                offeringLabel: formatCurrency(Number(report.offeringCollected ?? 0)),
+                submittedByName: report.submittedBy.name,
+                isLocked: report.isLocked,
+              };
+            })}
+            canUnlock={canUnlock}
+          />
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>

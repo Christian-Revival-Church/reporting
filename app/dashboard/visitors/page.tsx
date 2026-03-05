@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FollowupSelect } from "@/components/visitors/followup-select";
+import { MobileVisitorsList } from "@/components/visitors/mobile-visitors-list";
 import { VisitorsCharts } from "@/components/visitors/visitors-charts";
 import { VisitorForm } from "@/components/visitors/visitor-form";
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +82,22 @@ export default async function VisitorsPage() {
             Export CSV
           </Link>
         </div>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 md:hidden">
+          <MobileVisitorsList
+            visitors={visitors.map((visitor) => ({
+              id: visitor.id,
+              firstName: visitor.firstName,
+              lastName: visitor.lastName,
+              phone: visitor.phone,
+              invitedBy: visitor.invitedBy,
+              firstTime: visitor.firstTime,
+              convertedToMember: visitor.convertedToMember,
+              followUpStatus: visitor.followUpStatus,
+            }))}
+            canManage={canManage}
+          />
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>

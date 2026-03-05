@@ -524,7 +524,27 @@ export default async function ReportsPage() {
         <CardDescription className="mt-1">
           Totals are across the last 8 weeks, including online attendance.
         </CardDescription>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-2 md:hidden">
+          {serviceAttendanceRows.map((row) => (
+            <div key={row.service} className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-sm font-semibold text-slate-900">{row.service}</p>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <p>Present: {row.present}</p>
+                <p>Online: {row.online}</p>
+                <p>Absent: {row.absent}</p>
+                <p>Total: {row.total}</p>
+                <p>Rate: {formatPercent(row.attendanceRate)}</p>
+                <p>Share: {formatPercent(row.shareOfChurch)}</p>
+              </div>
+            </div>
+          ))}
+          {serviceAttendanceRows.length === 0 ? (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+              No service attendance records found for this period.
+            </p>
+          ) : null}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>
@@ -577,7 +597,22 @@ export default async function ReportsPage() {
       <Card>
         <CardTitle>CRC Members To Salvations Summary</CardTitle>
         <CardDescription className="mt-1">Pipeline totals with percentages against members and previous stage.</CardDescription>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-2 md:hidden">
+          {ministryFlowRows.map((row, index) => (
+            <div key={row.stage} className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-900">{row.stage}</p>
+                {index === ministryFlowRows.length - 1 ? <Badge variant="success">Outcome</Badge> : null}
+              </div>
+              <div className="mt-2 grid grid-cols-1 gap-1 text-xs text-slate-600">
+                <p>Total: {row.total}</p>
+                <p>% Of CRC Members: {formatPercent(row.percentOfMembers)}</p>
+                <p>% From Previous Stage: {formatPercent(row.percentFromPrevious)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>
@@ -609,7 +644,33 @@ export default async function ReportsPage() {
       <Card>
         <CardTitle>Latest Homecell Submissions</CardTitle>
         <CardDescription className="mt-1">Recent reports with members, visitors, first-time visitors, and salvations.</CardDescription>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 space-y-2 md:hidden">
+          {homecellReports.slice(0, 12).map((report) => (
+            <div key={report.id} className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{report.homecell.name}</p>
+                  <p className="text-xs text-slate-500">{report.weekStartDate.toISOString().slice(0, 10)}</p>
+                </div>
+                {report.isLocked ? <Badge>Locked</Badge> : <Badge variant="success">Unlocked</Badge>}
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                <p>
+                  Members: {report.membersPresent}/{report.totalMembers}
+                </p>
+                <p>Visitors: {report.visitors}</p>
+                <p>FTV: {report.firstTimeVisitors}</p>
+                <p>Salvations: {reportSalvationTotals.get(report.id) ?? 0}</p>
+              </div>
+            </div>
+          ))}
+          {homecellReports.length === 0 ? (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+              No homecell reports found in the selected window.
+            </p>
+          ) : null}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>

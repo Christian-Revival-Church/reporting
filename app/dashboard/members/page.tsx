@@ -3,6 +3,7 @@ import { Prisma, Role } from "@prisma/client";
 
 import { MemberForm } from "@/components/members/member-form";
 import { MemberFilters } from "@/components/members/member-filters";
+import { MobileMembersList } from "@/components/members/mobile-members-list";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
@@ -108,6 +109,17 @@ export default async function MembersPage({
   ]);
 
   const totalPages = Math.max(Math.ceil(totalMembers / pageSize), 1);
+  const mobileMembers = members.map((member) => ({
+    id: member.id,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    phone: member.phone,
+    email: member.email,
+    occupation: member.occupation,
+    homecellName: member.homecell?.name ?? null,
+    departmentName: member.department?.name ?? null,
+    membershipStatus: member.membershipStatus,
+  }));
 
   return (
     <div className="space-y-6">
@@ -133,66 +145,75 @@ export default async function MembersPage({
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>Name</TableHeaderCell>
-              <TableHeaderCell>Contacts</TableHeaderCell>
-              <TableHeaderCell>Homecell</TableHeaderCell>
-              <TableHeaderCell>Department</TableHeaderCell>
-              <TableHeaderCell>Status</TableHeaderCell>
-              <TableHeaderCell className="text-right">Action</TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {members.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell>
-                  <div className="space-y-0.5">
-                    <p className="font-medium text-slate-900">
-                      {member.firstName} {member.lastName}
-                    </p>
-                    <p className="text-xs text-slate-500">{member.occupation ?? "No occupation set"}</p>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <p>{member.phone ?? "-"}</p>
-                  <p className="text-xs text-slate-500">{member.email ?? "-"}</p>
-                </TableCell>
-                <TableCell>{member.homecell?.name ?? "-"}</TableCell>
-                <TableCell>{member.department?.name ?? "-"}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      member.membershipStatus === "ACTIVE"
-                        ? "success"
-                        : member.membershipStatus === "INACTIVE"
-                          ? "warning"
-                          : "default"
-                    }
-                  >
-                    {member.membershipStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Link
-                    href={`/dashboard/members/${member.id}`}
-                    className="text-sm font-medium text-sky-700 hover:underline"
-                  >
-                    Open profile
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
-            {members.length === 0 ? (
+        <div className="p-3 md:hidden">
+          {mobileMembers.length > 0 ? (
+            <MobileMembersList members={mobileMembers} />
+          ) : (
+            <p className="py-4 text-center text-sm text-slate-500">No members found for your current filters and scope.</p>
+          )}
+        </div>
+        <div className="hidden md:block">
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={6} className="py-6 text-center text-sm text-slate-500">
-                  No members found for your current filters and scope.
-                </TableCell>
+                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>Contacts</TableHeaderCell>
+                <TableHeaderCell>Homecell</TableHeaderCell>
+                <TableHeaderCell>Department</TableHeaderCell>
+                <TableHeaderCell>Status</TableHeaderCell>
+                <TableHeaderCell className="text-right">Action</TableHeaderCell>
               </TableRow>
-            ) : null}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {members.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell>
+                    <div className="space-y-0.5">
+                      <p className="font-medium text-slate-900">
+                        {member.firstName} {member.lastName}
+                      </p>
+                      <p className="text-xs text-slate-500">{member.occupation ?? "No occupation set"}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <p>{member.phone ?? "-"}</p>
+                    <p className="text-xs text-slate-500">{member.email ?? "-"}</p>
+                  </TableCell>
+                  <TableCell>{member.homecell?.name ?? "-"}</TableCell>
+                  <TableCell>{member.department?.name ?? "-"}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        member.membershipStatus === "ACTIVE"
+                          ? "success"
+                          : member.membershipStatus === "INACTIVE"
+                            ? "warning"
+                            : "default"
+                      }
+                    >
+                      {member.membershipStatus}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Link
+                      href={`/dashboard/members/${member.id}`}
+                      className="text-sm font-medium text-sky-700 hover:underline"
+                    >
+                      Open profile
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {members.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-6 text-center text-sm text-slate-500">
+                    No members found for your current filters and scope.
+                  </TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+          </Table>
+        </div>
         <div className="border-t border-slate-100 p-4">
           <Pagination
             page={page}

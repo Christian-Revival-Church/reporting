@@ -422,7 +422,183 @@ export function HomecellMembersReportForm({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="space-y-3 md:hidden">
+        {rows.map((row, index) => (
+          <div key={row.memberId} className="rounded-xl border border-slate-200 bg-white p-3">
+            <p className="text-sm font-semibold text-slate-900">
+              {index + 1}. {row.memberName}
+            </p>
+
+            <div className="mt-3 rounded-lg border border-slate-200 p-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Homecell</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() =>
+                    updateRow(index, (item) => ({
+                      ...item,
+                      homecellPresent: true,
+                      homecellAbsenceReason: "",
+                      homecellAbsenceNote: "",
+                    }))
+                  }
+                  className={cn(
+                    "rounded-md border px-3 py-1 text-xs font-medium",
+                    row.homecellPresent === true
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                      : "border-slate-300 text-slate-700",
+                  )}
+                >
+                  P
+                </button>
+                <button
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() => openAbsenceEditor(index, "homecell")}
+                  className={cn(
+                    "rounded-md border px-3 py-1 text-xs font-medium",
+                    row.homecellPresent === false
+                      ? "border-red-500 bg-red-50 text-red-700"
+                      : "border-slate-300 text-slate-700",
+                  )}
+                >
+                  A
+                </button>
+                {row.homecellPresent === false ? (
+                  <button
+                    type="button"
+                    disabled={!canEdit}
+                    onClick={() => openAbsenceEditor(index, "homecell")}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
+                  >
+                    Reason/Note
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-lg border border-slate-200 p-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Morning</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {sessionOptions.morning.map((label) => {
+                  const active = row.churchMorningPresent && row.churchMorningAttendedLabel === label;
+                  return (
+                    <button
+                      key={`${row.memberId}-mobile-morning-${label}`}
+                      type="button"
+                      disabled={!canEdit}
+                      onClick={() =>
+                        updateRow(index, (item) => ({
+                          ...item,
+                          churchMorningPresent: true,
+                          churchMorningAttendedLabel: label,
+                          churchMorningAbsenceReason: "",
+                          churchMorningAbsenceNote: "",
+                        }))
+                      }
+                      className={cn(
+                        "rounded-md border px-2 py-1 text-xs font-medium",
+                        active
+                          ? "border-slate-800 bg-slate-100 text-slate-900"
+                          : "border-slate-300 text-slate-700",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() => openAbsenceEditor(index, "churchMorning")}
+                  className={cn(
+                    "rounded-md border px-2 py-1 text-xs font-medium",
+                    !row.churchMorningPresent
+                      ? "border-red-500 bg-red-50 text-red-700"
+                      : "border-slate-300 text-slate-700",
+                  )}
+                >
+                  ABSENT
+                </button>
+                {!row.churchMorningPresent ? (
+                  <button
+                    type="button"
+                    disabled={!canEdit}
+                    onClick={() => openAbsenceEditor(index, "churchMorning")}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
+                  >
+                    Reason/Note
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-3 rounded-lg border border-slate-200 p-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Evening</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {sessionOptions.evening.map((label) => {
+                  const active = row.churchEveningPresent && row.churchEveningAttendedLabel === label;
+                  return (
+                    <button
+                      key={`${row.memberId}-mobile-evening-${label}`}
+                      type="button"
+                      disabled={!canEdit}
+                      onClick={() =>
+                        updateRow(index, (item) => ({
+                          ...item,
+                          churchEveningPresent: true,
+                          churchEveningAttendedLabel: label,
+                          churchEveningAbsenceReason: "",
+                          churchEveningAbsenceNote: "",
+                        }))
+                      }
+                      className={cn(
+                        "rounded-md border px-2 py-1 text-xs font-medium",
+                        active
+                          ? "border-slate-800 bg-slate-100 text-slate-900"
+                          : "border-slate-300 text-slate-700",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  disabled={!canEdit}
+                  onClick={() => openAbsenceEditor(index, "churchEvening")}
+                  className={cn(
+                    "rounded-md border px-2 py-1 text-xs font-medium",
+                    !row.churchEveningPresent
+                      ? "border-red-500 bg-red-50 text-red-700"
+                      : "border-slate-300 text-slate-700",
+                  )}
+                >
+                  ABSENT
+                </button>
+                {!row.churchEveningPresent ? (
+                  <button
+                    type="button"
+                    disabled={!canEdit}
+                    onClick={() => openAbsenceEditor(index, "churchEvening")}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
+                  >
+                    Reason/Note
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ))}
+        {rows.length === 0 ? (
+          <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+            No active members in this homecell yet.
+          </p>
+        ) : null}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <div className="min-w-[980px] space-y-3 rounded-lg border border-slate-200 p-3">
           <div className="grid grid-cols-[1.2fr_0.9fr_2.2fr] gap-3 border-b border-slate-200 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             <p>Member</p>
@@ -431,7 +607,7 @@ export function HomecellMembersReportForm({
           </div>
           {rows.map((row, index) => (
             <div
-              key={row.memberId}
+              key={`${row.memberId}-desktop`}
               className="grid grid-cols-[1.2fr_0.9fr_2.2fr] gap-3 rounded-lg border border-slate-200 p-2"
             >
               <p className="self-center text-sm text-slate-800">

@@ -3,6 +3,7 @@ import { startOfMonth, subMonths } from "date-fns";
 
 import { FinanceForm } from "@/components/finance/finance-form";
 import { FinanceTrendChart } from "@/components/finance/finance-trend-chart";
+import { MobileTransactionsList } from "@/components/finance/mobile-transactions-list";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from "@/components/ui/table";
@@ -167,7 +168,21 @@ export default async function FinancePage() {
             Export CSV
           </Link>
         </div>
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 md:hidden">
+          <MobileTransactionsList
+            transactions={transactions.map((transaction) => ({
+              id: transaction.id,
+              date: transaction.transactionDate.toISOString().slice(0, 10),
+              financeType: transaction.financeType,
+              memberName: transaction.member ? `${transaction.member.firstName} ${transaction.member.lastName}` : "-",
+              serviceTitle: transaction.service?.title ?? "-",
+              paymentMethod: transaction.paymentMethod,
+              capturedBy: transaction.capturedBy.name,
+              amountLabel: formatCurrency(Number(transaction.amount)),
+            }))}
+          />
+        </div>
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <Table>
             <TableHead>
               <TableRow>

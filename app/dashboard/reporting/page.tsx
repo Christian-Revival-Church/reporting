@@ -557,7 +557,7 @@ export default async function ReportingPage({
                 <select
                   name="homecellId"
                   defaultValue={selectedHomecellId}
-                  className="h-10 min-w-56 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 sm:min-w-56"
                 >
                   <option value="">All scoped homecells</option>
                   {homecells.map((homecell) => (
@@ -576,7 +576,7 @@ export default async function ReportingPage({
             </form>
           </div>
 
-          <div className="space-y-2 text-right">
+          <div className="space-y-2 text-left lg:text-right">
             <p className="text-lg font-semibold text-slate-900">
               Role: <span className="font-normal">{toStartCase(context.role)}</span>
             </p>
