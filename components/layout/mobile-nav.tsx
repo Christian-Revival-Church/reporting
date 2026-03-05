@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { getNavItemsForRole } from "@/lib/navigation";
+import { getNavItemsForRole, isNavItemActive } from "@/lib/navigation";
 import { toStartCase } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +48,7 @@ export function MobileNav({ role }: MobileNavProps) {
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/90 bg-white/95 px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] backdrop-blur lg:hidden">
         <ul className="grid grid-cols-5 gap-1">
           {quickItems.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const active = isNavItemActive(pathname, item.href);
             return (
               <li key={item.href}>
                 <Link
@@ -105,7 +105,7 @@ export function MobileNav({ role }: MobileNavProps) {
 
             <ul className="mt-4 grid grid-cols-2 gap-2">
               {items.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const active = isNavItemActive(pathname, item.href);
                 return (
                   <li key={item.href}>
                     <Link

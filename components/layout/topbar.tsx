@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { Badge } from "@/components/ui/badge";
-import { getNavItemsForRole } from "@/lib/navigation";
+import { getNavItemsForRole, isNavItemActive } from "@/lib/navigation";
 import { toStartCase } from "@/lib/utils";
 
 type TopbarProps = {
@@ -24,7 +24,7 @@ export function Topbar({ role, name, churchName, unreadNotifications }: TopbarPr
   const activeItem =
     [...items]
       .sort((first, second) => second.href.length - first.href.length)
-      .find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)) ?? null;
+      .find((item) => isNavItemActive(pathname, item.href)) ?? null;
   const pageLabel = activeItem?.label ?? "Dashboard";
   const dateLabel = new Intl.DateTimeFormat("en-US", {
     weekday: "short",
@@ -33,69 +33,120 @@ export function Topbar({ role, name, churchName, unreadNotifications }: TopbarPr
   }).format(new Date());
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 px-3 py-3 backdrop-blur md:px-5 lg:px-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
+    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 px-3 py-2 backdrop-blur md:px-5 md:py-3 lg:px-8">
+      <div className="space-y-2 md:hidden">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex items-center gap-2">
             <Image
               src="/icons/crc-logo.svg"
               alt="CRC logo"
-              width={24}
-              height={24}
-              className="h-6 w-6 rounded-full border border-slate-300 bg-slate-100"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-full border border-slate-300 bg-slate-100"
             />
-            <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">CRC Reporting</p>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-500 uppercase">CRC Reporting</p>
+              <h1 className="truncate text-base font-semibold text-slate-900">{pageLabel}</h1>
+            </div>
           </div>
-          <div className="mt-1 flex items-center gap-2">
-            <h1 className="truncate text-lg font-semibold text-slate-900">{pageLabel}</h1>
-            <Badge className="hidden sm:inline-flex">{toStartCase(role)}</Badge>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard/notifications"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              aria-label="Open notifications"
+            >
+              <Bell className="h-4 w-4" />
+              {unreadNotifications > 0 ? (
+                <span className="absolute -top-1 -right-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[10px] font-semibold text-white">
+                  {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                </span>
+              ) : null}
+            </Link>
+            <SignOutButton />
           </div>
-          <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-            <span className="truncate">{churchName ?? "Multi-tenant workspace"}</span>
-            <span className="text-slate-300">|</span>
-            <span className="truncate">Signed in as {name ?? "Church Leader"}</span>
-            <span className="text-slate-300">|</span>
-            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        </div>
+
+        <div className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium text-slate-700">{churchName ?? "Multi-tenant workspace"}</p>
+            <p className="truncate text-xs text-slate-500">Signed in as {name ?? "Church Leader"}</p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <Badge className="px-2 py-0.5 text-[10px]">{toStartCase(role)}</Badge>
+            <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
               <CalendarDays className="h-3.5 w-3.5" />
               {dateLabel}
             </span>
           </div>
         </div>
-
-        <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/dashboard/notifications"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-          >
-            <Bell className="h-4 w-4" />
-            {unreadNotifications > 0 ? (
-              <span className="absolute -top-1 -right-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[10px] font-semibold text-white">
-                {unreadNotifications > 99 ? "99+" : unreadNotifications}
-              </span>
-            ) : null}
-          </Link>
-          <SignOutButton />
-        </div>
       </div>
 
-      <div className="mt-3 hidden gap-2 overflow-x-auto pb-0.5 md:flex">
-        {items.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
+      <div className="hidden md:block">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/icons/crc-logo.svg"
+                alt="CRC logo"
+                width={24}
+                height={24}
+                className="h-6 w-6 rounded-full border border-slate-300 bg-slate-100"
+              />
+              <p className="text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">CRC Reporting</p>
+            </div>
+            <div className="mt-1 flex items-center gap-2">
+              <h1 className="truncate text-lg font-semibold text-slate-900">{pageLabel}</h1>
+              <Badge>{toStartCase(role)}</Badge>
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+              <span className="truncate">{churchName ?? "Multi-tenant workspace"}</span>
+              <span className="text-slate-300">|</span>
+              <span className="truncate">Signed in as {name ?? "Church Leader"}</span>
+              <span className="text-slate-300">|</span>
+              <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {dateLabel}
+              </span>
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
             <Link
-              key={item.href}
-              href={item.href}
-              className={
-                active
-                  ? "inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-medium text-white"
-                  : "inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900"
-              }
+              href="/dashboard/notifications"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              aria-label="Open notifications"
             >
-              <item.icon className="h-3.5 w-3.5" />
-              {item.label}
+              <Bell className="h-4 w-4" />
+              {unreadNotifications > 0 ? (
+                <span className="absolute -top-1 -right-1 min-w-5 rounded-full bg-red-600 px-1 text-center text-[10px] font-semibold text-white">
+                  {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                </span>
+              ) : null}
             </Link>
-          );
-        })}
+            <SignOutButton />
+          </div>
+        </div>
+
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5">
+          {items.map((item) => {
+            const active = isNavItemActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={
+                  active
+                    ? "inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-medium text-white"
+                    : "inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                }
+              >
+                <item.icon className="h-3.5 w-3.5" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </header>
   );

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { getNavItemsForRole } from "@/lib/navigation";
+import { getNavItemsForRole, isNavItemActive } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 type SidebarProps = {
@@ -48,7 +48,7 @@ export function Sidebar({ role, churchName }: SidebarProps) {
         <nav className="mt-2 h-full overflow-y-auto pr-1">
           <ul className="space-y-1">
             {items.map((item, index) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const active = isNavItemActive(pathname, item.href);
               return (
                 <li key={item.href}>
                   <Link

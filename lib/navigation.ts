@@ -25,3 +25,21 @@ export const navItems = [
 export function getNavItemsForRole(role: Role) {
   return navItems.filter((item) => hasPermission(role, item.permission));
 }
+
+function normalizePathname(pathname: string) {
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1);
+  }
+  return pathname;
+}
+
+export function isNavItemActive(pathname: string, href: string) {
+  const current = normalizePathname(pathname);
+  const target = normalizePathname(href);
+
+  if (target === "/dashboard") {
+    return current === target;
+  }
+
+  return current === target || current.startsWith(`${target}/`);
+}
