@@ -160,78 +160,142 @@ export function SalvationsReportForm({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-base font-semibold text-slate-900">Salvations</p>
-        <div className="text-sm text-slate-600">
-          Homecell: <span className="font-medium text-emerald-700">{selectedHomecellCount}</span>
-          {" | "}
-          Church: <span className="font-medium text-sky-700">{selectedChurchCount}</span>
+        <div className="grid gap-1 text-sm text-slate-600 md:text-right">
+          <p>
+            Homecell: <span className="font-medium text-emerald-700">{selectedHomecellCount}</span>
+          </p>
+          <p>
+            Church: <span className="font-medium text-sky-700">{selectedChurchCount}</span>
+          </p>
         </div>
       </div>
 
       <div className="space-y-3 rounded-lg border border-slate-200 p-3">
-        <div className="grid grid-cols-[1.2fr_1fr_1.3fr] gap-3 border-b border-slate-200 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          <p>Person</p>
-          <p>Type / Attendance</p>
-          <p>Mark Salvation Location</p>
+        <div className="space-y-2 md:hidden">
+          {candidates.map((candidate) => {
+            const key = candidateKey(candidate.source, candidate.id);
+            const location = selections.get(key) ?? "";
+            return (
+              <div key={`${key}-mobile`} className="rounded-xl border border-slate-200 p-3">
+                <p className="text-sm font-semibold text-slate-900">{candidate.name}</p>
+                <div className="mt-2 space-y-1 text-xs">
+                  <p className="font-medium text-slate-700">{sourceLabel(candidate.source)}</p>
+                  <p className={cn(candidate.eligible ? "text-emerald-700" : "text-red-700")}>
+                    {presentLabel(candidate.presentAt)}
+                  </p>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={!canEdit || !candidate.eligible}
+                    onClick={() =>
+                      setSelections((current) => {
+                        const next = new Map(current);
+                        next.set(key, location === "HOMECELL" ? "" : "HOMECELL");
+                        return next;
+                      })
+                    }
+                    className={cn(
+                      "rounded-md border px-3 py-1 text-xs font-medium",
+                      location === "HOMECELL"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                        : "border-slate-300 text-slate-700",
+                    )}
+                  >
+                    Homecell
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canEdit || !candidate.eligible}
+                    onClick={() =>
+                      setSelections((current) => {
+                        const next = new Map(current);
+                        next.set(key, location === "CHURCH" ? "" : "CHURCH");
+                        return next;
+                      })
+                    }
+                    className={cn(
+                      "rounded-md border px-3 py-1 text-xs font-medium",
+                      location === "CHURCH" ? "border-sky-500 bg-sky-50 text-sky-700" : "border-slate-300 text-slate-700",
+                    )}
+                  >
+                    Church
+                  </button>
+                  {!candidate.eligible ? (
+                    <p className="text-xs text-red-700">Only present people can be marked.</p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {candidates.map((candidate) => {
-          const key = candidateKey(candidate.source, candidate.id);
-          const location = selections.get(key) ?? "";
-          return (
-            <div key={key} className="grid grid-cols-[1.2fr_1fr_1.3fr] gap-3 rounded-lg border border-slate-200 p-2">
-              <p className="self-center text-sm text-slate-900">{candidate.name}</p>
+        <div className="hidden space-y-3 md:block">
+          <div className="grid grid-cols-[1.2fr_1fr_1.3fr] gap-3 border-b border-slate-200 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p>Person</p>
+            <p>Type / Attendance</p>
+            <p>Mark Salvation Location</p>
+          </div>
 
-              <div className="space-y-1 self-center text-xs">
-                <p className="font-medium text-slate-700">{sourceLabel(candidate.source)}</p>
-                <p className={cn(candidate.eligible ? "text-emerald-700" : "text-red-700")}>
-                  {presentLabel(candidate.presentAt)}
-                </p>
-              </div>
+          {candidates.map((candidate) => {
+            const key = candidateKey(candidate.source, candidate.id);
+            const location = selections.get(key) ?? "";
+            return (
+              <div key={key} className="grid grid-cols-[1.2fr_1fr_1.3fr] gap-3 rounded-lg border border-slate-200 p-2">
+                <p className="self-center text-sm text-slate-900">{candidate.name}</p>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  disabled={!canEdit || !candidate.eligible}
-                  onClick={() =>
-                    setSelections((current) => {
-                      const next = new Map(current);
-                      next.set(key, location === "HOMECELL" ? "" : "HOMECELL");
-                      return next;
-                    })
-                  }
-                  className={cn(
-                    "rounded-md border px-3 py-1 text-xs font-medium",
-                    location === "HOMECELL"
-                      ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                      : "border-slate-300 text-slate-700",
-                  )}
-                >
-                  Homecell
-                </button>
-                <button
-                  type="button"
-                  disabled={!canEdit || !candidate.eligible}
-                  onClick={() =>
-                    setSelections((current) => {
-                      const next = new Map(current);
-                      next.set(key, location === "CHURCH" ? "" : "CHURCH");
-                      return next;
-                    })
-                  }
-                  className={cn(
-                    "rounded-md border px-3 py-1 text-xs font-medium",
-                    location === "CHURCH" ? "border-sky-500 bg-sky-50 text-sky-700" : "border-slate-300 text-slate-700",
-                  )}
-                >
-                  Church
-                </button>
-                {!candidate.eligible ? (
-                  <p className="text-xs text-red-700">Only present people can be marked.</p>
-                ) : null}
+                <div className="space-y-1 self-center text-xs">
+                  <p className="font-medium text-slate-700">{sourceLabel(candidate.source)}</p>
+                  <p className={cn(candidate.eligible ? "text-emerald-700" : "text-red-700")}>
+                    {presentLabel(candidate.presentAt)}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={!canEdit || !candidate.eligible}
+                    onClick={() =>
+                      setSelections((current) => {
+                        const next = new Map(current);
+                        next.set(key, location === "HOMECELL" ? "" : "HOMECELL");
+                        return next;
+                      })
+                    }
+                    className={cn(
+                      "rounded-md border px-3 py-1 text-xs font-medium",
+                      location === "HOMECELL"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                        : "border-slate-300 text-slate-700",
+                    )}
+                  >
+                    Homecell
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canEdit || !candidate.eligible}
+                    onClick={() =>
+                      setSelections((current) => {
+                        const next = new Map(current);
+                        next.set(key, location === "CHURCH" ? "" : "CHURCH");
+                        return next;
+                      })
+                    }
+                    className={cn(
+                      "rounded-md border px-3 py-1 text-xs font-medium",
+                      location === "CHURCH" ? "border-sky-500 bg-sky-50 text-sky-700" : "border-slate-300 text-slate-700",
+                    )}
+                  >
+                    Church
+                  </button>
+                  {!candidate.eligible ? (
+                    <p className="text-xs text-red-700">Only present people can be marked.</p>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
         {candidates.length === 0 ? (
           <p className="text-sm text-slate-500">No members or visitors found for this homecell/week yet.</p>

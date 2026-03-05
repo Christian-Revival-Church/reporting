@@ -470,7 +470,7 @@ export default async function ReportingPage({
     },
     {
       key: "first-visitors",
-      label: "Ftvs",
+      label: "FTVs",
       content: selectedHomecellId ? (
         <div className="space-y-3">
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
